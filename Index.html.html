@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Najmi — Play. Learn. Shine ⭐</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+  :root{
+    --ink:#22305a; --sky:#2d8cff; --sun:#ffc83d; --leaf:#27c498;
+    --coral:#ff6b6b; --grape:#8b5cf6; --pink:#ff8fc7; --paper:#eaf3ff; --card:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Nunito',sans-serif; color:var(--ink); min-height:100vh;
+    display:flex; align-items:center; justify-content:center; padding:18px; overflow-x:hidden;
+    background:
+      radial-gradient(900px 420px at 15% -5%, #ffe9a8 0%, transparent 55%),
+      radial-gradient(900px 420px at 95% 0%, #c9e4ff 0%, transparent 55%),
+      linear-gradient(180deg,#eef6ff,#e3f0ff);
+  }
+  /* floating background blobs */
+  .blob{position:fixed;border-radius:50%;filter:blur(2px);opacity:.35;z-index:0;animation:float 9s ease-in-out infinite;}
+  .b1{width:70px;height:70px;background:var(--pink);top:12%;left:8%;}
+  .b2{width:50px;height:50px;background:var(--sun);top:70%;left:12%;animation-delay:1.5s;}
+  .b3{width:60px;height:60px;background:var(--leaf);top:22%;right:10%;animation-delay:.8s;}
+  .b4{width:40px;height:40px;background:var(--grape);bottom:14%;right:14%;animation-delay:2.2s;}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-22px) rotate(12deg)}}
+
+  .stage{width:100%;max-width:480px;position:relative;z-index:1;}
+  .card{
+    background:var(--card); border-radius:32px; padding:24px 22px 28px;
+    box-shadow:0 22px 60px rgba(45,140,255,.22), 0 3px 0 #e6eefc inset; border:4px solid #fff;
+    position:relative;
+  }
+
+  /* ---- Mascot ---- */
+  .mascot{width:96px;height:96px;margin:0 auto;display:block;}
+  .mascot.bounce{animation:bounce .6s ease;}
+  .mascot.sad{animation:shake .5s ease;}
+  @keyframes bounce{0%,100%{transform:translateY(0) scale(1)}30%{transform:translateY(-16px) scale(1.08)}60%{transform:translateY(0) scale(.96)}}
+  @keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+  .star-body{animation:pulse 2.5s ease-in-out infinite;transform-origin:center;}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+
+  h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:2.1rem;letter-spacing:-.5px;text-align:center;}
+  .tag{font-size:.95rem;color:#5b6b8c;font-weight:700;text-align:center;margin-top:2px;}
+  .tag .ar{font-size:.85rem;opacity:.8;}
+
+  .dots{display:flex;gap:6px;margin:18px 0 6px;}
+  .dot{height:9px;flex:1;border-radius:99px;background:#e6eefc;transition:.3s;}
+  .dot.done{background:var(--leaf);} .dot.now{background:var(--sun);transform:scaleY(1.3);}
+  .scoreline{display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:1rem;margin-bottom:8px;}
+  .scoreline .s{background:var(--sun);color:#7a5a00;padding:4px 12px;border-radius:99px;}
+  .scoreline .hearts{color:var(--coral);letter-spacing:3px;font-size:1.1rem;}
+
+  .q{text-align:center;padding:22px 14px;background:linear-gradient(180deg,#fff8e8,#fff1f6);border-radius:24px;margin:12px 0 16px;border:3px dashed #ffd98a;}
+  .q .prompt{font-size:1rem;color:#b07d00;font-weight:800;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+  .q .sum{font-family:'Fredoka',sans-serif;font-weight:700;font-size:2.3rem;line-height:1.15;color:var(--ink);}
+
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .opt{font-family:'Fredoka',sans-serif;font-weight:600;font-size:1.3rem;padding:18px 8px;border:none;border-radius:20px;background:#eef5ff;color:var(--ink);cursor:pointer;transition:transform .12s, background .2s, box-shadow .2s;box-shadow:0 5px 0 #cfe0ff;}
+  .opt:hover{transform:translateY(-3px) rotate(-1deg);background:#e3eeff;}
+  .opt:active{transform:translateY(2px);box-shadow:0 2px 0 #cfe0ff;}
+  .opt.right{background:var(--leaf);color:#fff;box-shadow:0 5px 0 #1fa07b;animation:pop .35s;}
+  .opt.wrong{background:var(--coral);color:#fff;box-shadow:0 5px 0 #d84f4f;}
+  @keyframes pop{50%{transform:scale(1.12)}}
+  .opt:disabled{cursor:default;}
+  .feedback{text-align:center;font-family:'Fredoka',sans-serif;font-size:1.3rem;min-height:34px;margin-top:14px;font-weight:600;}
+  .feedback.good{color:var(--leaf);} .feedback.bad{color:var(--coral);}
+
+  .btn{width:100%;font-family:'Fredoka',sans-serif;font-weight:600;font-size:1.2rem;padding:16px;border:none;border-radius:20px;background:var(--sky);color:#fff;cursor:pointer;margin-top:11px;box-shadow:0 6px 0 #1f6fd6;transition:transform .12s;}
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 #1f6fd6;}
+  .btn.ghost{background:#eef5ff;color:var(--ink);box-shadow:0 6px 0 #d4e3ff;}
+  .btn.grape{background:var(--grape);box-shadow:0 6px 0 #6d3fc4;}
+  .btn.sun{background:var(--sun);color:#7a5a00;box-shadow:0 6px 0 #d9a400;}
+
+  .center{text-align:center;}
+  .pick{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin:10px 0;}
+  .chip{font-family:'Nunito';font-weight:800;font-size:.92rem;padding:10px 15px;border-radius:99px;border:2px solid #d4e3ff;background:#fff;color:var(--ink);cursor:pointer;transition:.2s;}
+  .chip:hover{transform:translateY(-2px);}
+  .chip.on{background:var(--sky);color:#fff;border-color:var(--sky);}
+  .lead{font-size:1rem;color:#5b6b8c;font-weight:600;line-height:1.5;margin:8px 0 4px;}
+  label.fld{display:block;text-align:left;font-weight:800;font-size:.9rem;margin:14px 0 6px;color:#5b6b8c;}
+  input.name{width:100%;padding:14px;border-radius:14px;border:2px solid #d4e3ff;font-family:'Nunito';font-weight:700;font-size:1rem;color:var(--ink);}
+  input.name:focus{outline:none;border-color:var(--sky);}
+
+  .phasebar{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff6dc;border:2px solid #ffe49e;border-radius:14px;padding:9px 14px;font-weight:800;font-size:.9rem;color:#9a7400;margin-bottom:6px;}
+  .phasebar.after{background:#e3f9f1;border-color:#a8ebd5;color:#1a8a68;}
+
+  .big{font-family:'Fredoka',sans-serif;font-size:3.2rem;font-weight:700;color:var(--sky);line-height:1;}
+  .resultcard{background:#f7fbff;border-radius:20px;padding:18px;margin:14px 0;border:2px solid #e6eefc;}
+  .row{display:flex;justify-content:space-between;padding:7px 0;font-weight:700;border-bottom:1px dashed #dceaff;}
+  .row:last-child{border:none;}
+  .gain{color:var(--leaf);font-weight:800;}
+  .hide{display:none;}
+  .foot{font-size:.78rem;color:#9aa8c4;text-align:center;margin-top:14px;font-weight:600;}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:.85rem;}
+  th,td{padding:9px 6px;text-align:center;border-bottom:1px solid #e6eefc;}
+  th{font-weight:800;color:#5b6b8c;font-size:.74rem;text-transform:uppercase;letter-spacing:.4px;}
+  td.nm{text-align:left;font-weight:700;}
+  .up{color:var(--leaf);font-weight:800;}
+  .empty{color:#9aa8c4;font-weight:600;padding:18px 0;}
+
+  /* confetti */
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:50;}
+  .conf{position:absolute;width:10px;height:14px;border-radius:2px;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:1;}}
+
+  /* ===== CERTIFICATE ===== */
+  #certArea{position:fixed;inset:0;background:rgba(20,30,60,.6);z-index:60;display:none;align-items:center;justify-content:center;padding:16px;}
+  #certArea.show{display:flex;}
+  .cert{
+    background:linear-gradient(135deg,#fffdf6,#fff7e6); width:100%;max-width:440px;border-radius:18px;
+    padding:30px 26px;text-align:center;border:8px double var(--sun);box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;
+  }
+  .cert .ribbon{font-size:2.6rem;}
+  .cert h2{font-family:'Fredoka',sans-serif;font-size:1.7rem;color:var(--ink);margin:4px 0;}
+  .cert .sub{color:#b07d00;font-weight:800;letter-spacing:1px;text-transform:uppercase;font-size:.8rem;}
+  .cert .who{font-family:'Fredoka',sans-serif;font-size:2rem;color:var(--sky);margin:12px 0 4px;border-bottom:3px dotted #ffd98a;display:inline-block;padding:0 18px 6px;}
+  .cert .detail{color:#5b6b8c;font-weight:700;margin:10px 0;font-size:.95rem;line-height:1.5;}
+  .cert .scorebadge{display:inline-block;background:var(--leaf);color:#fff;font-family:'Fredoka';font-size:1.3rem;padding:6px 20px;border-radius:99px;margin:6px 0;}
+  .cert .sig{display:flex;justify-content:space-between;margin-top:20px;font-size:.78rem;color:#9aa8c4;font-weight:700;}
+  .cert .sig div{border-top:2px solid #e0d4a8;padding-top:5px;width:45%;}
+  @media print{
+    body *{visibility:hidden;}
+    #certArea,#certArea *{visibility:visible;}
+    #certArea{position:absolute;background:#fff;}
+    .cert{box-shadow:none;max-width:100%;}
+    .noprint{display:none!important;}
+  }
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+<div id="confetti"></div>
+
+<div class="stage">
+  <div class="card">
+
+    <!-- ===== SETUP ===== -->
+    <div id="setup">
+      <svg class="mascot star-body" id="mascotSetup" viewBox="0 0 100 100"><use href="#najmi"/></svg>
+      <h1>Najmi</h1>
+      <p class="tag">Play. Learn. Shine ⭐ <span class="ar">— نجمي</span></p>
+      <p class="lead" style="margin-top:14px;">Pick a subject and play! Track each student's score before &amp; after to show they learned.</p>
+
+      <label class="fld">Subject</label>
+      <div class="pick" id="subPick">
+        <button class="chip on" data-sub="math">➕ Math</button>
+        <button class="chip" data-sub="science">🔬 Science</button>
+        <button class="chip" data-sub="arabic">🔤 Arabic</button>
+        <button class="chip" data-sub="qatar">🇶🇦 Qatar</button>
+        <button class="chip" data-sub="islam">🕌 Islam</button>
+      </div>
+
+      <div id="mathOpts">
+        <label class="fld">Math type</label>
+        <div class="pick" id="opPick">
+          <button class="chip on" data-op="+">Adding +</button>
+          <button class="chip" data-op="-">Subtracting −</button>
+          <button class="chip" data-op="×">Times ×</button>
+        </div>
+        <label class="fld">How hard?</label>
+        <div class="pick" id="lvlPick">
+          <button class="chip on" data-lvl="1">Easy</button>
+          <button class="chip" data-lvl="2">Medium</button>
+          <button class="chip" data-lvl="3">Tricky</button>
+        </div>
+      </div>
+
+      <label class="fld">Student name</label>
+      <input class="name" id="playerName" placeholder="e.g. Ahmed" />
+
+      <label class="fld">Round</label>
+      <div class="pick" id="phasePick">
+        <button class="chip on" data-phase="before">1️⃣ Before learning</button>
+        <button class="chip" data-phase="after">2️⃣ After learning</button>
+      </div>
+
+      <button class="btn sun" onclick="startGame()">Let's Play! →</button>
+      <button class="btn ghost" onclick="showSheet()">📊 View impact sheet</button>
+      <p class="foot">How to use: student plays "Before" → you teach / they practise → student plays "After". The sheet shows their improvement automatically.</p>
+    </div>
+
+    <!-- ===== GAME ===== -->
+    <div id="game" class="hide">
+      <div class="phasebar" id="phaseBar">1️⃣ BEFORE round — <span id="pbName">Ahmed</span></div>
+      <svg class="mascot" id="mascotGame" viewBox="0 0 100 100" style="width:64px;height:64px;"><use href="#najmi"/></svg>
+      <div class="scoreline">
+        <span class="s">⭐ <span id="score">0</span></span>
+        <span class="hearts" id="hearts">♥♥♥</span>
+      </div>
+      <div class="dots" id="dots"></div>
+      <div class="q">
+        <div class="prompt" id="prompt">What is…</div>
+        <div class="sum" id="sum">2 + 3</div>
+      </div>
+      <div class="opts" id="opts"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <!-- ===== RESULTS ===== -->
+    <div id="results" class="hide center">
+      <svg class="mascot bounce" id="mascotResult" viewBox="0 0 100 100"><use href="#najmi"/></svg>
+      <h1 style="font-size:1.7rem;">Round Complete!</h1>
+      <div class="big"><span id="finalScore">0</span>/<span id="outOf">10</span></div>
+      <p class="lead" id="msg">Great effort!</p>
+      <div class="resultcard">
+        <div class="row"><span>Student</span><span id="rName">—</span></div>
+        <div class="row"><span>Round</span><span id="rPhase">Before</span></div>
+        <div class="row"><span>Correct</span><span id="rCorrect">0</span></div>
+        <div class="row" id="gainRow"><span>Improvement</span><span class="gain" id="rGain">—</span></div>
+      </div>
+      <button class="btn sun" onclick="openCert()">🏅 Get Certificate</button>
+      <button class="btn grape" onclick="showSheet()">📊 See impact sheet</button>
+      <button class="btn ghost" onclick="backToSetup()">Next round / student</button>
+    </div>
+
+    <!-- ===== IMPACT SHEET ===== -->
+    <div id="sheet" class="hide">
+      <h1 style="font-size:1.5rem;">📊 Impact Sheet</h1>
+      <p class="tag">Evidence of learning — before vs after</p>
+      <div id="summaryBox" class="resultcard hide center">
+        <div class="lead" style="margin:0;">Average improvement</div>
+        <div class="big" id="avgGain" style="font-size:2.6rem;">+0%</div>
+        <div class="tag" id="studentCount">0 students tested</div>
+      </div>
+      <table id="resultsTable">
+        <thead><tr><th class="nm">Student</th><th>Before</th><th>After</th><th>Gain</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <button class="btn" onclick="copySheet()">📋 Copy table (for your report)</button>
+      <button class="btn ghost" onclick="backToSetup()">← Back</button>
+      <button class="btn ghost" onclick="clearData()" style="color:#d84f4f;">Clear all data</button>
+      <p class="foot" id="copyNote">Paste this into your submission as proof of measured impact.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== CERTIFICATE OVERLAY ===== -->
+<div id="certArea">
+  <div class="cert">
+    <div class="ribbon">🏅</div>
+    <div class="sub">Certificate of Achievement</div>
+    <h2>Najmi ⭐ Star Learner</h2>
+    <div class="lead" style="margin:6px 0;">This certifies that</div>
+    <div class="who" id="certName">Ahmed</div>
+    <div class="detail" id="certDetail">completed the Adding challenge</div>
+    <div class="scorebadge" id="certScore">9 / 10</div>
+    <div class="detail" id="certDate">Doha · 2026</div>
+    <div class="sig">
+      <div>Najmi the Star</div>
+      <div id="certBy">Created by [student]</div>
+    </div>
+    <div class="noprint" style="margin-top:18px;">
+      <button class="btn sun" onclick="window.print()">🖨️ Print / Save PDF</button>
+      <button class="btn ghost" onclick="closeCert()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mascot SVG definition -->
+<svg style="display:none"><symbol id="najmi" viewBox="0 0 100 100">
+  <path d="M50 6 L61 38 L95 38 L67 58 L78 92 L50 71 L22 92 L33 58 L5 38 L39 38 Z" fill="#ffc83d" stroke="#e6a800" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="42" cy="50" r="5" fill="#22305a"/>
+  <circle cx="58" cy="50" r="5" fill="#22305a"/>
+  <circle cx="43.5" cy="48.5" r="1.6" fill="#fff"/>
+  <circle cx="59.5" cy="48.5" r="1.6" fill="#fff"/>
+  <path d="M42 62 Q50 70 58 62" stroke="#22305a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="34" cy="58" r="4" fill="#ff8fc7" opacity=".6"/>
+  <circle cx="66" cy="58" r="4" fill="#ff8fc7" opacity=".6"/>
+</symbol></svg>
+
+<script>
+  const TOTAL = 10;
+  let sub='math', op='+', lvl=1, name='', phase='before';
+  let qNum=0, score=0, lives=3, streak=0, correctCount=0, answer=0;
+  let lastTopicLabel='Adding';
+  const data = {}; // { name: {before, after} } — in memory; copy sheet to keep
+
+  // ---- tiny sound engine (Web Audio, no files) ----
+  let actx;
+  function beep(freq,dur,type='sine',vol=.15){
+    try{
+      actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+      const o=actx.createOscillator(),g=actx.createGain();
+      o.type=type;o.frequency.value=freq;o.connect(g);g.connect(actx.destination);
+      g.gain.setValueAtTime(vol,actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+dur);
+      o.start();o.stop(actx.currentTime+dur);
+    }catch(e){}
+  }
+  function sndRight(){beep(660,.12,'triangle');setTimeout(()=>beep(880,.16,'triangle'),110);}
+  function sndWrong(){beep(200,.22,'sawtooth',.12);}
+  function sndWin(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.18,'triangle'),i*120));}
+
+  // ---- question banks ----
+  const SCIENCE=[
+    ["Which planet do we live on?","Earth",["Mars","Earth","Venus","Sun"]],
+    ["What do plants need to make food?","Sunlight",["Sunlight","Sand","Plastic","Glass"]],
+    ["How many legs does an insect have?","6",["4","6","8","10"]],
+    ["What do we breathe in to stay alive?","Oxygen",["Oxygen","Helium","Smoke","Steam"]],
+    ["Water freezes into…","Ice",["Ice","Steam","Mud","Salt"]],
+    ["The sun gives us light and…","Heat",["Heat","Rain","Snow","Wind"]],
+    ["Which animal lays eggs?","Hen",["Cow","Hen","Dog","Cat"]],
+    ["What part of a plant takes in water?","Roots",["Roots","Petals","Leaves","Thorns"]],
+    ["A baby frog is called a…","Tadpole",["Tadpole","Cub","Chick","Calf"]],
+    ["What pulls things down to the ground?","Gravity",["Gravity","Magnet","Wind","Light"]],
+    ["Which is a source of light?","Sun",["Sun","Rock","Book","Chair"]],
+    ["How many days are in a week?","7",["5","6","7","8"]]
+  ];
+  const ARABIC=[
+    ["What is 'cat' in Arabic?","قطة",["قطة","كلب","فأر","حصان"]],
+    ["What is 'book' in Arabic?","كتاب",["قلم","كتاب","باب","بيت"]],
+    ["What is 'sun' in Arabic?","شمس",["قمر","نجم","شمس","سماء"]],
+    ["What is 'water' in Arabic?","ماء",["ماء","نار","هواء","تراب"]],
+    ["What is 'house' in Arabic?","بيت",["بيت","باب","شارع","سوق"]],
+    ["What is 'school' in Arabic?","مدرسة",["مدرسة","مكتبة","ملعب","مسجد"]],
+    ["What is 'apple' in Arabic?","تفاحة",["موزة","تفاحة","برتقالة","عنب"]],
+    ["What is 'red' in Arabic?","أحمر",["أزرق","أحمر","أخضر","أصفر"]],
+    ["What is 'one' in Arabic?","واحد",["واحد","اثنان","ثلاثة","أربعة"]],
+    ["What is 'mother' in Arabic?","أم",["أب","أخ","أم","جد"]],
+    ["What is 'moon' in Arabic?","قمر",["شمس","قمر","نجمة","غيمة"]],
+    ["What is 'bird' in Arabic?","عصفور",["سمكة","عصفور","قطة","نحلة"]]
+  ];
+  const QATAR=[
+    ["What is the capital of Qatar?","Doha",["Doha","Dubai","Riyadh","Manama"]],
+    ["What colours are on the Qatar flag?","Maroon & white",["Green & white","Maroon & white","Red & black","Blue & white"]],
+    ["What is Qatar's currency?","Riyal",["Dollar","Riyal","Dinar","Pound"]],
+    ["Which sea is Qatar on?","Arabian Gulf",["Red Sea","Arabian Gulf","Black Sea","Caspian Sea"]],
+    ["Qatar's National Day is in which month?","December",["June","December","March","August"]],
+    ["Which big football event did Qatar host in 2022?","FIFA World Cup",["Olympics","FIFA World Cup","Tour de France","Wimbledon"]],
+    ["What is a traditional Qatari boat called?","Dhow",["Canoe","Dhow","Kayak","Ferry"]],
+    ["Which animal is loved in Qatari desert culture?","Camel",["Camel","Penguin","Bear","Tiger"]],
+    ["What is the famous old market in Doha?","Souq Waqif",["Souq Waqif","Grand Bazaar","Camden","Borough"]],
+    ["Long ago Qatar was famous for diving for…","Pearls",["Gold","Pearls","Silk","Spices"]],
+    ["What is Qatar's exercise day called?","National Sport Day",["Fun Day","National Sport Day","Race Day","Play Day"]],
+    ["The Torch Tower is a landmark in which city?","Doha",["Doha","London","Cairo","Tokyo"]]
+  ];
+  const ISLAM=[
+    ["How many daily prayers are there in Islam?","5",["3","5","7","2"]],
+    ["What is the holy book of Islam?","The Quran",["The Quran","The Map","The Diary","The Atlas"]],
+    ["In which month do Muslims fast?","Ramadan",["Rajab","Ramadan","Shawwal","Safar"]],
+    ["What is the first pillar of Islam?","Shahada",["Shahada","Hajj","Zakat","Sawm"]],
+    ["Which city do Muslims face when praying?","Makkah",["Makkah","Cairo","Doha","Madinah"]],
+    ["What is the pilgrimage to Makkah called?","Hajj",["Hajj","Umrah","Eid","Iftar"]],
+    ["Giving to those in need is called…","Zakat",["Zakat","Salah","Wudu","Adhan"]],
+    ["What do Muslims say before eating?","Bismillah",["Bismillah","Goodbye","Hello","Thanks"]],
+    ["The call to prayer is called the…","Adhan",["Adhan","Iqamah","Khutbah","Dua"]],
+    ["The festival after Ramadan is…","Eid al-Fitr",["Eid al-Fitr","Eid al-Adha","New Year","Friday"]],
+    ["What is the place of worship for Muslims?","Mosque",["Mosque","Library","Museum","Market"]],
+    ["Washing before prayer is called…","Wudu",["Wudu","Zakat","Hajj","Sahur"]]
+  ];
+
+  // ---- pickers ----
+  document.querySelectorAll('#subPick .chip').forEach(c=>{c.onclick=()=>{document.querySelectorAll('#subPick .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');sub=c.dataset.sub;document.getElementById('mathOpts').style.display=sub==='math'?'block':'none';};});
+  document.querySelectorAll('#opPick .chip').forEach(c=>{c.onclick=()=>{document.querySelectorAll('#opPick .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');op=c.dataset.op;};});
+  document.querySelectorAll('#lvlPick .chip').forEach(c=>{c.onclick=()=>{document.querySelectorAll('#lvlPick .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');lvl=+c.dataset.lvl;};});
+  document.querySelectorAll('#phasePick .chip').forEach(c=>{c.onclick=()=>{document.querySelectorAll('#phasePick .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');phase=c.dataset.phase;};});
+
+  function show(id){['setup','game','results','sheet'].forEach(s=>document.getElementById(s).classList.add('hide'));document.getElementById(id).classList.remove('hide');}
+
+  let bank=[];
+  function topicLabel(){
+    if(sub==='math')return op==='+'?'Adding':op==='-'?'Subtracting':'Times tables';
+    return {science:'Science',arabic:'Arabic',qatar:'Qatar',islam:'Islam'}[sub];
+  }
+  function startGame(){
+    name=(document.getElementById('playerName').value||'Player').trim();
+    if(sub==='science')bank=[...SCIENCE].sort(()=>Math.random()-.5);
+    if(sub==='arabic')bank=[...ARABIC].sort(()=>Math.random()-.5);
+    if(sub==='qatar')bank=[...QATAR].sort(()=>Math.random()-.5);
+    if(sub==='islam')bank=[...ISLAM].sort(()=>Math.random()-.5);
+    lastTopicLabel=topicLabel();
+    qNum=0;score=0;lives=3;streak=0;correctCount=0;
+    const bar=document.getElementById('phaseBar');
+    bar.className='phasebar'+(phase==='after'?' after':'');
+    bar.innerHTML=(phase==='before'?'1️⃣ BEFORE round — ':'2️⃣ AFTER round — ')+'<span>'+name+'</span>';
+    buildDots();show('game');nextQuestion();
+  }
+  function buildDots(){const d=document.getElementById('dots');d.innerHTML='';for(let i=0;i<TOTAL;i++){const s=document.createElement('div');s.className='dot';d.appendChild(s);}}
+  function paintDots(){document.querySelectorAll('#dots .dot').forEach((dot,i)=>{dot.classList.remove('done','now');if(i<qNum)dot.classList.add('done');else if(i===qNum)dot.classList.add('now');});}
+  function range(){return lvl===1?10:lvl===2?20:50;}
+  function rnd(n){return Math.floor(Math.random()*n)+1;}
+
+  function makeQuestion(){
+    document.getElementById('prompt').textContent=sub==='math'?'What is…':'Question';
+    if(sub==='math'){
+      let a=rnd(range()),b=rnd(range());
+      if(op==='×'){a=rnd(lvl===1?6:lvl===2?9:12);b=rnd(lvl===1?6:lvl===2?9:12);}
+      if(op==='-'&&b>a){[a,b]=[b,a];}
+      answer=op==='+'?a+b:op==='-'?a-b:a*b;
+      document.getElementById('sum').textContent=`${a} ${op} ${b}`;
+      const set=new Set([answer]);
+      while(set.size<4){let w=answer+(Math.random()<.5?-1:1)*rnd(op==='×'?6:5);if(w>=0)set.add(w);}
+      renderOpts([...set].sort(()=>Math.random()-.5));
+    }else{
+      const item=bank[qNum%bank.length];
+      document.getElementById('sum').textContent=item[0];
+      answer=item[1];
+      renderOpts([...item[2]].sort(()=>Math.random()-.5));
+    }
+  }
+  function renderOpts(arr){const box=document.getElementById('opts');box.innerHTML='';arr.forEach(v=>{const btn=document.createElement('button');btn.className='opt';btn.textContent=v;btn.onclick=()=>choose(btn,v);box.appendChild(btn);});}
+
+  function nextQuestion(){
+    if(qNum>=TOTAL||lives<=0)return endGame();
+    document.getElementById('feedback').textContent='';
+    document.getElementById('score').textContent=score;
+    document.getElementById('hearts').textContent='♥'.repeat(lives)+'♡'.repeat(3-lives);
+    paintDots();makeQuestion();
+  }
+  function choose(btn,val){
+    document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+    const fb=document.getElementById('feedback');
+    const m=document.getElementById('mascotGame');
+    if(String(val)===String(answer)){
+      btn.classList.add('right');score+=10;correctCount++;streak++;
+      fb.textContent=streak>=3?`🔥 ${streak} in a row!`:'✅ Correct!';fb.className='feedback good';
+      sndRight();m.classList.remove('sad');m.classList.add('bounce');burst(8);
+    }else{
+      btn.classList.add('wrong');streak=0;lives--;
+      document.querySelectorAll('.opt').forEach(b=>{if(String(b.textContent)===String(answer))b.classList.add('right');});
+      fb.textContent=`Answer: ${answer}`;fb.className='feedback bad';
+      sndWrong();m.classList.remove('bounce');m.classList.add('sad');
+    }
+    setTimeout(()=>m.classList.remove('bounce','sad'),600);
+    qNum++;setTimeout(nextQuestion,1150);
+  }
+
+  function endGame(){
+    if(!data[name])data[name]={};
+    data[name][phase]=correctCount;
+    document.getElementById('finalScore').textContent=correctCount;
+    document.getElementById('outOf').textContent=TOTAL;
+    document.getElementById('rName').textContent=name;
+    document.getElementById('rPhase').textContent=phase==='before'?'Before learning':'After learning';
+    document.getElementById('rCorrect').textContent=correctCount+' / '+TOTAL;
+    const gr=document.getElementById('gainRow');
+    if(phase==='after'&&data[name].before!=null){
+      const g=correctCount-data[name].before;
+      document.getElementById('rGain').textContent=(g>=0?'+':'')+g+' answers';gr.style.display='flex';
+    }else gr.style.display='none';
+    const pct=correctCount/TOTAL;
+    document.getElementById('msg').textContent=pct>=.8?'Excellent! You shine bright! ⭐':pct>=.5?'Well done — keep practising!':'Good try! Practise and play the After round.';
+    show('results');
+    if(pct>=.8){sndWin();burst(60);}else sndRight();
+  }
+
+  // certificate
+  function openCert(){
+    document.getElementById('certName').textContent=name;
+    document.getElementById('certDetail').textContent='completed the '+lastTopicLabel+' challenge';
+    document.getElementById('certScore').textContent=correctCount+' / '+TOTAL;
+    const d=new Date();
+    document.getElementById('certDate').textContent='Doha · '+d.toLocaleDateString();
+    document.getElementById('certArea').classList.add('show');
+  }
+  function closeCert(){document.getElementById('certArea').classList.remove('show');}
+
+  function showSheet(){
+    const tbody=document.getElementById('tbody');tbody.innerHTML='';
+    const names=Object.keys(data);const sumBox=document.getElementById('summaryBox');
+    if(names.length===0){tbody.innerHTML='<tr><td colspan="4" class="empty">No students yet. Play a Before and After round to see results here.</td></tr>';sumBox.classList.add('hide');}
+    else{
+      let gains=[],count=0;
+      names.forEach(n=>{
+        const b=data[n].before,a=data[n].after;
+        let gTxt='—';
+        if(b!=null&&a!=null){const g=a-b;gTxt=(g>=0?'+':'')+g;gains.push(g);count++;}
+        tbody.innerHTML+=`<tr><td class="nm">${n}</td><td>${b!=null?b:'—'}</td><td>${a!=null?a:'—'}</td><td class="up">${gTxt}</td></tr>`;
+      });
+      if(count>0){const avg=gains.reduce((x,y)=>x+y,0)/count;document.getElementById('avgGain').textContent=(avg>=0?'+':'')+Math.round(avg/TOTAL*100)+'%';document.getElementById('studentCount').textContent=count+' student'+(count>1?'s':'')+' completed both rounds';sumBox.classList.remove('hide');}
+      else sumBox.classList.add('hide');
+    }
+    show('sheet');
+  }
+  function copySheet(){
+    let txt='Student\tBefore (/10)\tAfter (/10)\tImprovement\n';
+    Object.keys(data).forEach(n=>{const b=data[n].before??'-',a=data[n].after??'-';let g='-';if(data[n].before!=null&&data[n].after!=null)g=(data[n].after-data[n].before>=0?'+':'')+(data[n].after-data[n].before);txt+=`${n}\t${b}\t${a}\t${g}\n`;});
+    navigator.clipboard.writeText(txt).then(()=>{document.getElementById('copyNote').textContent='✅ Copied! Paste into your report or a spreadsheet.';}).catch(()=>{document.getElementById('copyNote').textContent='Select and copy the table manually.';});
+  }
+  function clearData(){if(confirm('Clear all student data? Copy the sheet first if you need it.')){Object.keys(data).forEach(k=>delete data[k]);showSheet();}}
+  function backToSetup(){show('setup');}
+
+  // confetti
+  function burst(n){
+    const box=document.getElementById('confetti');
+    const colors=['#ffc83d','#2d8cff','#27c498','#ff6b6b','#8b5cf6','#ff8fc7'];
+    for(let i=0;i<n;i++){
+      const c=document.createElement('div');c.className='conf';
+      c.style.left=Math.random()*100+'vw';c.style.top='-20px';
+      c.style.background=colors[i%colors.length];
+      c.style.animationDuration=(1.5+Math.random()*1.5)+'s';
+      c.style.transform=`rotate(${Math.random()*360}deg)`;
+      box.appendChild(c);setTimeout(()=>c.remove(),3200);
+    }
+  }
+</script>
+</body>
+</html>
